@@ -6,6 +6,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('carbonlens_auth');
     if (saved) return JSON.parse(saved);
+    
+    // Check if the user explicitly logged out to keep them logged out
+    const loggedOut = localStorage.getItem('carbonlens_logged_out');
+    if (loggedOut === 'true') return null;
+
     // Default mock user matching our elite bio-curator Dr. Aris Thorne
     return {
       id: 'CL-8829-THORNE',
@@ -29,6 +34,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = (email, password, desiredRole = 'user') => {
     void password;
+    // Clear the logged-out state since the user is logging in
+    localStorage.removeItem('carbonlens_logged_out');
+
     // Standard mock verification
     const mockUser = {
       id: email === 'admin@carbonlens.org' || desiredRole === 'admin' ? 'CL-0001-ADMIN' : 'CL-9912-USER',
@@ -50,6 +58,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = (name, email, password) => {
     void password;
+    // Clear the logged-out state since the user is registering
+    localStorage.removeItem('carbonlens_logged_out');
+
     const newUser = {
       id: 'CL-' + Math.floor(1000 + Math.random() * 9000) + '-NEW',
       name: name,
@@ -67,6 +78,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Record that the user explicitly logged out to prevent auto-logging in Dr. Thorne
+    localStorage.setItem('carbonlens_logged_out', 'true');
     setUser(null);
     toast.success('Successfully logged out from the ledger.');
   };
